@@ -52,7 +52,8 @@ class ProductPageLocators:
 class CartPageLocators:
     """Локаторы для корзины"""
     CART_TABLE = (By.ID, "tbodyid")  # Таблица с товарами в корзине
-    PLACE_ORDER_BUTTON = (By.XPATH, "//button[contains(text(), 'Place Order')]")  # Кнопка оформления заказа
-    DELETE_BUTTONS = (By.XPATH, "//a[contains(text(), 'Delete')]")  # Кнопка удаления товара
+    PLACE_ORDER_BUTTON = (By.CSS_SELECTOR, "button[data-target='#orderModal']")
+    DELETE_BUTTON = (By.XPATH, "//a[starts-with(@onclick, 'deleteItem(')]")  # Локатор для кнопки удаления товара
     PRODUCT_NAME_IN_CART = (By.XPATH, "//tbody[@id='tbodyid']//tr[@class='success']/td[2]")  # Локатор для названия товара в корзине
+
 
