@@ -1,34 +1,43 @@
-from pages.base_page import BasePage
-from locators import SignUpModalLocators
-from selenium.webdriver.common.by import By
+from locators import SignUpModalLocators, MainPageLocators
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from tests.config import BASE_URL
+from config.config import BASE_URL
+from selenium.webdriver.common.by import By
 
 
-class SignUpModal(BasePage):
-    def __init__(self, browser):
-        super().__init__(browser, BASE_URL)
+class SignUpModal:
+    def __init__(self, driver):
+        self.driver = driver
 
     def open(self):
-        """Открывает модальное окно регистрации"""
-        self.click(By.ID, "signin2")  
-        WebDriverWait(self.browser, 5).until(
+        """Открывает модальное окно регистрации, кликая по кнопке на главной странице"""
+        self.driver.get(BASE_URL)
+        self.driver.find_element(*MainPageLocators.SIGNUP_BUTTON).click()
+        WebDriverWait(self.driver, 5).until(
             EC.visibility_of_element_located(SignUpModalLocators.MODAL)
         )
 
+    def is_modal_open(self):
+        """Проверяет, открылось ли модальное окно"""
+        return bool(self.driver.find_elements(*SignUpModalLocators.MODAL))
+
     def enter_username(self, username):
-        self.input_text(*SignUpModalLocators.USERNAME_INPUT, text=username)
+        self.driver.find_element(*SignUpModalLocators.USERNAME_INPUT).send_keys(username)
 
     def enter_password(self, password):
-        self.input_text(*SignUpModalLocators.PASSWORD_INPUT, text=password)
+        self.driver.find_element(*SignUpModalLocators.PASSWORD_INPUT).send_keys(password)
 
     def submit(self):
-        self.click(*SignUpModalLocators.SIGNUP_BUTTON)
+        """Нажимает кнопку регистрации"""
+        self.driver.find_element(*SignUpModalLocators.SIGNUP_BUTTON).click()
 
     def close(self):
-        self.click(*SignUpModalLocators.CLOSE_BUTTON)
+        """Закрывает модальное окно"""
+        self.driver.find_element(*SignUpModalLocators.CLOSE_BUTTON).click()
+        WebDriverWait(self.driver, 5).until(
+            EC.invisibility_of_element_located(SignUpModalLocators.MODAL)
+        )
 
-    def is_modal_open(self):
-        """Проверяет, открыто ли модальное окно"""
-        return self.is_element_visible(*SignUpModalLocators.MODAL)
+    def is_error_message_displayed(self):
+        """Проверяет, отображается ли сообщение об ошибке"""
+        return bool(self.driver.find_elements(*SignUpModalLocators.ERROR_MESSAGE))

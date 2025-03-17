@@ -1,10 +1,8 @@
 import pytest
 from components.login_modal import LoginModal
-import time
-from selenium.common.exceptions import NoAlertPresentException
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from locators import LoginModalLocators
 
 
 @pytest.mark.smoke
@@ -17,52 +15,29 @@ class TestLoginModal:
         page.open()  
         assert page.is_modal_open(), "Модальное окно логина не открылось"
 
-    def test_valid_login(self, browser):
-        """Проверяет успешный вход в систему"""
+
+    @pytest.mark.parametrize("username, password, expected_success", [
+        ("TestYan", "1111", True),
+        ("test_user", "wrong_password", False)
+    ])
+    def test_login(self, browser, username, password, expected_success):
+        """Проверяет вход в систему с разными комбинациями логина и пароля"""
         page = LoginModal(browser)
         page.open()
-        page.enter_username("TestYan")
-        page.enter_password("1111")
+        page.enter_username(username)
+        page.enter_password(password)
         page.submit()
 
-        # page.wait_for_login()
-        time.sleep(3)
-
-
-        assert page.is_logged_in(), "Не удалось войти в систему"
-
-
-
-
-
-    def test_invalid_login(self, browser):
-        """Проверяет, что алерт появляется при неправильном пароле"""
-        page = LoginModal(browser)
-        page.open()
-
-        # Ждем, когда поле username станет кликабельным
-        WebDriverWait(browser, 5).until(
-            EC.element_to_be_clickable(LoginModalLocators.USERNAME_INPUT)
-        ).send_keys("test_user")
-
-        WebDriverWait(browser, 5).until(
-            EC.element_to_be_clickable(LoginModalLocators.PASSWORD_INPUT)
-        ).send_keys("wrong_password")
-
-        WebDriverWait(browser, 5).until(
-            EC.element_to_be_clickable(LoginModalLocators.LOGIN_BUTTON)
-        ).click()
-
-        # Ждем появления алерта
-        WebDriverWait(browser, 5).until(EC.alert_is_present())
-
-        try:
-            alert = browser.switch_to.alert
-            alert_text = alert.text
-            alert.accept()  # Закрывает алерт
-        except NoAlertPresentException:
-            alert_text = ""
-
-        assert "wrong password" in alert_text.lower(), "Ошибка входа не отображается"
-
-
+        if expected_success:
+            page.wait_for_login()
+            assert page.is_logged_in(), "Не удалось войти в систему"
+        else:
+            try:
+                WebDriverWait(browser, 5).until(EC.alert_is_present())
+                alert = browser.switch_to.alert
+                alert_text = alert.text
+                alert.accept()
+            except TimeoutException:
+                assert False, "Ожидался алерт об ошибке входа, но он не появился!"
+            
+            assert "wrong password" in alert_text.lower(), "Ошибка входа не отображается"

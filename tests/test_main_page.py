@@ -1,6 +1,6 @@
 import pytest
 from pages.main_page import MainPage
-from tests.config import BASE_URL
+from config.config import BASE_URL
 
 @pytest.mark.smoke
 class TestMainPageLoad:

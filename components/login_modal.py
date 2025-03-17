@@ -1,53 +1,45 @@
 from locators import LoginModalLocators, MainPageLocators
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from tests.config import BASE_URL
+from config.config import BASE_URL
 from selenium.webdriver.common.by import By
+from pages.base_page import BasePage
 
 
-
-class LoginModal:
-    def __init__(self, driver):
-        self.driver = driver
+class LoginModal(BasePage):
+    def __init__(self, browser):
+        super().__init__(browser, BASE_URL)
 
     def open(self):
-        """Открывает модальное окно логина, кликая по кнопке логина на главной странице"""
-        self.driver.get(BASE_URL)  
-        self.driver.find_element(*MainPageLocators.LOGIN_BUTTON).click()
-        WebDriverWait(self.driver, 5).until(
-            EC.visibility_of_element_located(LoginModalLocators.MODAL)
-        )
+        """Открывает главную страницу и открывает модальное окно логина"""
+        super().open()
+        self.click(*MainPageLocators.LOGIN_BUTTON)
+        self.wait_for_element(*LoginModalLocators.MODAL)
 
     def is_modal_open(self):
         """Проверяет, открылось ли модальное окно"""
-        return bool(self.driver.find_elements(*LoginModalLocators.MODAL))
+        return self.is_element_present(*LoginModalLocators.MODAL)
 
     def enter_username(self, username):
-        self.driver.find_element(*LoginModalLocators.USERNAME_INPUT).send_keys(username)
+        """Вводит имя пользователя"""
+        self.input_text(*LoginModalLocators.USERNAME_INPUT, username)
 
     def enter_password(self, password):
-        self.driver.find_element(*LoginModalLocators.PASSWORD_INPUT).send_keys(password)
+        """Вводит пароль"""
+        self.input_text(*LoginModalLocators.PASSWORD_INPUT, password)
 
     def submit(self):
-        self.driver.find_element(*LoginModalLocators.LOGIN_BUTTON).click()
+        """Отправляет форму логина"""
+        self.click(*LoginModalLocators.LOGIN_BUTTON)
 
     def close(self):
         """Закрывает модальное окно"""
-        self.driver.find_element(*LoginModalLocators.CLOSE_BUTTON).click()
-        WebDriverWait(self.driver, 5).until(
-            EC.invisibility_of_element_located(LoginModalLocators.MODAL)
-        )
+        self.click(*LoginModalLocators.CLOSE_BUTTON)
+        self.wait_for_element(*LoginModalLocators.MODAL, timeout=5)
 
     def is_logged_in(self):
-        return self.driver.find_element(By.ID, "logout2").is_displayed()
+        """Проверяет, вошел ли пользователь (есть ли кнопка logout)"""
+        return self.is_element_present(By.ID, "logout2")
 
-    def is_error_message_displayed(self):
-        """Проверяет, отображается ли сообщение об ошибке"""
-        return bool(self.driver.find_elements(*LoginModalLocators.ERROR_MESSAGE))
-    
     def wait_for_login(self, timeout=10):
-        """Ждёт, пока появится кнопка 'Log out' после успешного входа"""
-        WebDriverWait(self.driver, timeout).until(
-            EC.presence_of_element_located((By.ID, "logout2"))
-        )
-
+        """Ждет, пока исчезнет 'Log in' и появится 'Log out'"""
+        self.wait_for_element(By.ID, "login2", timeout=timeout)
+        self.wait_for_element(By.ID, "logout2", timeout=timeout)
