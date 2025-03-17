@@ -1,0 +1,18 @@
+# Python кеш и временные файлы
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Кеш pytest
+.pytest_cache/
+
+# IDE файлы
+.vscode/
+.idea/
+*.iml
+
+# Логи и временные файлы
+*.log
+*.tmp
+.DS_Store
