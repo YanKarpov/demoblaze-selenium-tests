@@ -55,5 +55,16 @@ class CartPageLocators:
     PLACE_ORDER_BUTTON = (By.CSS_SELECTOR, "button[data-target='#orderModal']")
     DELETE_BUTTON = (By.XPATH, "//a[starts-with(@onclick, 'deleteItem(')]")  # Локатор для кнопки удаления товара
     PRODUCT_NAME_IN_CART = (By.XPATH, "//tbody[@id='tbodyid']//tr[@class='success']/td[2]")  # Локатор для названия товара в корзине
+    ORDER_MODAL = (By.ID, "orderModal")
+    CLOSE_ORDER_MODAL_BUTTON = (By.CSS_SELECTOR, ".close-order-modal")
+    PLACE_ORDER_BUTTON_IN_MODAL = (By.CSS_SELECTOR, "button.btn.btn-primary[onclick='purchaseOrder()']")
+
+    NAME_FIELD = (By.ID, "name")
+    COUNTRY_FIELD = (By.ID, "country")
+    CITY_FIELD = (By.ID, "city")
+    CREDIT_CARD_FIELD = (By.ID, "card")
+    MONTH_FIELD = (By.ID, "month")
+    YEAR_FIELD = (By.ID, "year")
+
 
 

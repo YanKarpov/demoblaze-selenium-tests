@@ -1,7 +1,7 @@
 from locators import SignUpModalLocators, MainPageLocators
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from config.config import BASE_URL
+from config.config import MAIN_URL
 from selenium.webdriver.common.by import By
 
 
@@ -11,7 +11,7 @@ class SignUpModal:
 
     def open(self):
         """Открывает модальное окно регистрации, кликая по кнопке на главной странице"""
-        self.driver.get(BASE_URL)
+        self.driver.get(MAIN_URL)
         self.driver.find_element(*MainPageLocators.SIGNUP_BUTTON).click()
         WebDriverWait(self.driver, 5).until(
             EC.visibility_of_element_located(SignUpModalLocators.MODAL)

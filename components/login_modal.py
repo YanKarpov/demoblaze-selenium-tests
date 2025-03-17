@@ -1,12 +1,12 @@
 from locators import LoginModalLocators, MainPageLocators
-from config.config import BASE_URL
+from config.config import MAIN_URL
 from selenium.webdriver.common.by import By
 from pages.base_page import BasePage
 
 
 class LoginModal(BasePage):
     def __init__(self, browser):
-        super().__init__(browser, BASE_URL)
+        super().__init__(browser, MAIN_URL)
 
     def open(self):
         """Открывает главную страницу и открывает модальное окно логина"""
