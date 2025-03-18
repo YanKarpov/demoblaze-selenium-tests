@@ -52,8 +52,8 @@ class CartPageLocators:
     """Локаторы для корзины"""
     CART_TABLE = (By.ID, "tbodyid")  
     PLACE_ORDER_BUTTON = (By.CSS_SELECTOR, "button[data-target='#orderModal']")
-    DELETE_BUTTON = (By.XPATH, "//a[starts-with(@onclick, 'deleteItem(')]")  
-    PRODUCT_NAME_IN_CART = (By.XPATH, "//tbody[@id='tbodyid']//tr[@class='success']/td[2]")  
+    DELETE_BUTTON = (By.CSS_SELECTOR, "a[onclick^='deleteItem(']")
+    PRODUCT_NAME_IN_CART = (By.CSS_SELECTOR, "#tbodyid .success")  
     ORDER_MODAL = (By.ID, "orderModal")
     CLOSE_ORDER_MODAL_BUTTON = (By.CSS_SELECTOR, ".close-order-modal")
     PLACE_ORDER_BUTTON_IN_MODAL = (By.CSS_SELECTOR, "button.btn.btn-primary[onclick='purchaseOrder()']")
