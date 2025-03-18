@@ -9,7 +9,6 @@ class MainPageLocators:
     SIGNUP_BUTTON = (By.ID, "signin2")  
     PRODUCT_ITEM = (By.CLASS_NAME, "card")  
 
-    # Локаторы для категорий
     CATEGORY_LAPTOPS = (By.XPATH, "//a[contains(text(), 'Laptops')]")
     CATEGORY_PHONES = (By.XPATH, "//a[contains(text(), 'Phones')]")
     CATEGORY_MONITORS = (By.XPATH, "//a[contains(text(), 'Monitors')]")
@@ -46,15 +45,15 @@ class ProductPageLocators:
     PRODUCT_DESCRIPTION = (By.ID, "more-information")
     ADD_TO_CART_BUTTON = (By.XPATH, "//a[contains(text(), 'Add to cart')]")
 
-    PRODUCT_ADDED_ALERT = (By.CSS_SELECTOR, ".alert-success")  # Примерный локатор для алерта
+    PRODUCT_ADDED_ALERT = (By.CSS_SELECTOR, ".alert-success")
     CART_BUTTON = (By.ID, "cartur")
 
 class CartPageLocators:
     """Локаторы для корзины"""
-    CART_TABLE = (By.ID, "tbodyid")  # Таблица с товарами в корзине
+    CART_TABLE = (By.ID, "tbodyid")  
     PLACE_ORDER_BUTTON = (By.CSS_SELECTOR, "button[data-target='#orderModal']")
-    DELETE_BUTTON = (By.XPATH, "//a[starts-with(@onclick, 'deleteItem(')]")  # Локатор для кнопки удаления товара
-    PRODUCT_NAME_IN_CART = (By.XPATH, "//tbody[@id='tbodyid']//tr[@class='success']/td[2]")  # Локатор для названия товара в корзине
+    DELETE_BUTTON = (By.XPATH, "//a[starts-with(@onclick, 'deleteItem(')]")  
+    PRODUCT_NAME_IN_CART = (By.XPATH, "//tbody[@id='tbodyid']//tr[@class='success']/td[2]")  
     ORDER_MODAL = (By.ID, "orderModal")
     CLOSE_ORDER_MODAL_BUTTON = (By.CSS_SELECTOR, ".close-order-modal")
     PLACE_ORDER_BUTTON_IN_MODAL = (By.CSS_SELECTOR, "button.btn.btn-primary[onclick='purchaseOrder()']")
