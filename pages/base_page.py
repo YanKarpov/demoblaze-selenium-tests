@@ -72,18 +72,6 @@ class BasePage:
                 element.clear()
             element.send_keys(text)
 
-    # def scroll_into_view(self, how, what):
-    #     """Прокручивает страницу до элемента."""
-    #     element = self.find_element(how, what)
-    #     if element:
-    #         self.browser.execute_script("arguments[0].scrollIntoView(true);", element)
-
-    # def hover_over_element(self, how, what):
-    #     """Наводит курсор на элемент."""
-    #     element = self.find_element(how, what)
-    #     if element:
-    #         ActionChains(self.browser).move_to_element(element).perform()
-
     def wait_for_element(self, how, what, timeout=10):
         """Ожидает появления элемента."""
         return self._wait_for_element(how, what, timeout, EC.presence_of_element_located)
