@@ -78,11 +78,11 @@ class BasePage:
     #     if element:
     #         self.browser.execute_script("arguments[0].scrollIntoView(true);", element)
 
-    def hover_over_element(self, how, what):
-        """Наводит курсор на элемент."""
-        element = self.find_element(how, what)
-        if element:
-            ActionChains(self.browser).move_to_element(element).perform()
+    # def hover_over_element(self, how, what):
+    #     """Наводит курсор на элемент."""
+    #     element = self.find_element(how, what)
+    #     if element:
+    #         ActionChains(self.browser).move_to_element(element).perform()
 
     def wait_for_element(self, how, what, timeout=10):
         """Ожидает появления элемента."""
