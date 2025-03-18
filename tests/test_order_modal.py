@@ -31,7 +31,6 @@ class TestOrderModal:
         page = OrderModal(browser)
         page.open()
 
-        # Ввод данных для оформления заказа
         page.enter_name(order_data["name"])
         page.enter_country(order_data["country"])
         page.enter_city(order_data["city"])
@@ -42,30 +41,23 @@ class TestOrderModal:
         try:
             page.place_order()
 
-            # Пытаемся обработать стандартный алерт, если он появился
             try:
                 alert = browser.switch_to.alert
-                alert_text = alert.text.strip().lower()  # Убираем пробелы и приводим к нижнему регистру
-                alert.accept()  # Закрываем стандартный алерт
+                alert_text = alert.text.strip().lower() 
+                alert.accept()  
 
-                # Проверка, что текст в алерте совпадает с ожидаемым
                 assert alert_text == expected_message.strip().lower(), f"Ожидаемый текст алерта: '{expected_message}', но получили: '{alert_text}'"
             except NoAlertPresentException:
-                # Если стандартный алерт не появился, продолжаем с кастомным алертом
                 custom_alert = CustomAlert(browser)
                 custom_alert.wait_for_alert()
 
-                # Проверка текста в кастомном алерте
                 custom_alert.check_alert_text(expected_message)
 
-                # Закрытие кастомного алерта
                 custom_alert.close_alert()
 
         except UnexpectedAlertPresentException:
-            # Обрабатываем неожиданный алерт, если он появился
             alert = browser.switch_to.alert
-            alert_text = alert.text.strip().lower()  # Убираем пробелы и приводим к нижнему регистру
+            alert_text = alert.text.strip().lower() 
             alert.accept()
 
-            # Проверяем текст сообщения в алерте
             assert alert_text == expected_message.strip().lower(), f"Ожидаемый текст алерта: '{expected_message}', но получили: '{alert_text}'"
