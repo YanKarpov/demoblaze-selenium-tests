@@ -28,7 +28,8 @@ class TestCartPage:
 
 @pytest.mark.regression
 class TestCartPageActions:
-    @pytest.mark.xfail
+    # @pytest.mark.xfail
+    @pytest.mark.repeat(5)
     def test_remove_product(self, browser):
         """Проверяет, что товар можно удалить из корзины и количество товаров уменьшается на 1"""
         page = CartPage(browser, CART_PAGE_URL)
@@ -45,7 +46,6 @@ class TestCartPageActions:
                 time.sleep(5)
 
                 page.wait_for_elements_in_cart()
-                time.sleep(5)
 
                 updated_product_count = len(page.get_product_names())
 

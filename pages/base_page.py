@@ -72,11 +72,11 @@ class BasePage:
                 element.clear()
             element.send_keys(text)
 
-    def scroll_into_view(self, how, what):
-        """Прокручивает страницу до элемента."""
-        element = self.find_element(how, what)
-        if element:
-            self.browser.execute_script("arguments[0].scrollIntoView(true);", element)
+    # def scroll_into_view(self, how, what):
+    #     """Прокручивает страницу до элемента."""
+    #     element = self.find_element(how, what)
+    #     if element:
+    #         self.browser.execute_script("arguments[0].scrollIntoView(true);", element)
 
     def hover_over_element(self, how, what):
         """Наводит курсор на элемент."""

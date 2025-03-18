@@ -50,7 +50,7 @@ class ProductPage(BasePage):
 
     def is_product_in_cart(self):
         """Проверяет, есть ли товары в корзине"""
-        return self.is_element_present(*CartPageLocators.CART_TABLE)  # Возвращает True, если товары в корзине
+        return self.is_element_present(*CartPageLocators.PRODUCT_NAME_IN_CART)  
 
 
     def get_current_url(self):
