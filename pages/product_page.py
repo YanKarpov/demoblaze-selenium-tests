@@ -53,6 +53,4 @@ class ProductPage(BasePage):
         return self.is_element_present(*CartPageLocators.PRODUCT_NAME_IN_CART)  
 
 
-    def get_current_url(self):
-        """Возвращает текущий URL страницы."""
-        return self.browser.current_url
+ 

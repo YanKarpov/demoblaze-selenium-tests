@@ -28,8 +28,8 @@ class TestCartPage:
 
 @pytest.mark.regression
 class TestCartPageActions:
-    @pytest.mark.xfail
-    # @pytest.mark.repeat(15)
+    @pytest.mark.xfail(reason="Неустойчивое поведение сайта при удалении товаров из корзины")
+    @pytest.mark.repeat(5)
     def test_remove_product(self, browser):
         """Проверяет, что товар можно удалить из корзины и количество товаров уменьшается на 1"""
         page = CartPage(browser, CART_PAGE_URL)
