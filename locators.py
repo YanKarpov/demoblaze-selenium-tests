@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 class MainPageLocators:
     """Локаторы для главной страницы"""
     BANNER = (By.ID, "contcar")  
-    NAV_BAR = (By.CLASS_NAME, "navbar")  
+    NAV_BAR = (By.CLASS_NAME, "navbar-collapse")  
     LOGIN_BUTTON = (By.ID, "login2")  
     SIGNUP_BUTTON = (By.ID, "signin2")  
     PRODUCT_ITEM = (By.CLASS_NAME, "card")  
