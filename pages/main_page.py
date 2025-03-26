@@ -10,6 +10,7 @@ class MainPage(BasePage):
 
     def is_banner_visible(self):
         """Проверяет, отображается ли баннер"""
+        self.logger.info("Ищем баннер")
         return self.is_element_present(*MainPageLocators.BANNER)
 
     def is_login_button_clickable(self):

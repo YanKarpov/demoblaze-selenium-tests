@@ -11,7 +11,7 @@ def test_site_up_and_visual_consistency(browser):
     
     image1 = take_screenshot(browser, name="home_page_loads")
     
-    time.sleep(5)
+    time.sleep(1)
     
     image2 = take_screenshot(browser, name="product_loads")
     

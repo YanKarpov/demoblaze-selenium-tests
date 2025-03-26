@@ -1,16 +1,15 @@
 import logging
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, TimeoutException
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from utils.logger import logger
 
 class BasePage:
     def __init__(self, browser, url, timeout=10):
         self.browser = browser
         self.url = url
         self.timeout = timeout
-        self.logger = logging.getLogger(__name__)
-        logging.basicConfig(level=logging.INFO)
+        self.logger = logger
 
     def open(self):
         """Открывает страницу и применяет неявное ожидание."""
