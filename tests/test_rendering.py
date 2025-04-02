@@ -1,9 +1,11 @@
 from utils.screenshot_maker import take_screenshot
-import time
+import time, os
 from PIL import ImageChops
 
-def test_site_up_and_visual_consistency(browser):
+def test_site_up_and_visual_consistency(browser, name="difference", folder="tests/screenshots/diff_screen"):
     """Проверяем, что сайт работает и сравниваем скриншоты на визуальные различия"""
+
+    path = os.path.join(folder, f"{name}.png")  
 
     browser.get("https://www.demoblaze.com/")
     
@@ -19,7 +21,7 @@ def test_site_up_and_visual_consistency(browser):
 
     if diff.getbbox():
 
-        diff.save("difference.png")
+        diff.save(path)
 
         assert False, "Изображения различаются!" 
     else:
