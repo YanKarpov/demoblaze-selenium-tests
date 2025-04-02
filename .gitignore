@@ -13,6 +13,7 @@ __pycache__/
 *.iml
 
 # Логи и временные файлы
+logs/
 *.log
 *.tmp
 .DS_Store
