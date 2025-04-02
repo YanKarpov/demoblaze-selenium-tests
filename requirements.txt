@@ -5,6 +5,7 @@ charset-normalizer==3.4.1
 colorama==0.4.6
 defusedxml==0.7.1
 dotenv==0.9.9
+Faker==37.1.0
 h11==0.14.0
 idna==3.10
 iniconfig==2.1.0
@@ -27,6 +28,7 @@ sortedcontainers==2.4.0
 trio==0.29.0
 trio-websocket==0.12.2
 typing_extensions==4.13.0
+tzdata==2025.2
 urllib3==2.3.0
 websocket-client==1.8.0
 wsproto==1.2.0
