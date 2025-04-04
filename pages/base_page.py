@@ -112,4 +112,4 @@ class BasePage:
 
     def _log_error(self, message):
         """Логирует ошибку."""
-        self.logger.error(f"[ERROR] {message}")
+        self.logger.error(f"{message}")
