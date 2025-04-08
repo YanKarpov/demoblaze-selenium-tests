@@ -57,9 +57,9 @@ if not logger.handlers:
     logger.addHandler(console_handler)
 
 
-while current_size < max_size:
-    logger.info("Мяу, я милый и пушистый! Приютишь меня?")
-    current_size = os.path.getsize(log_file)
+# while current_size < max_size:
+#     logger.info("Мяу, я милый и пушистый! Приютишь меня?")
+#     current_size = os.path.getsize(log_file)
 
 # if __name__ == "__main__":
 #     logger.debug("Это отладочное сообщение (DEBUG)")
