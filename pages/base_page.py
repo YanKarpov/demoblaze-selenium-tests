@@ -1,4 +1,3 @@
-import logging
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -13,23 +12,36 @@ class BasePage:
 
     def open(self):
         """Открывает страницу и применяет неявное ожидание."""
+        self.logger.info(f"Открытие страницы: {self.url}")
         self.browser.get(self.url)
         self.browser.implicitly_wait(self.timeout)
 
     def is_element_present(self, how, what):
         """Проверяет наличие элемента на странице."""
-        return self._safe_find_element(how, what) is not None
+        element = self._safe_find_element(how, what)
+        if element:
+            self.logger.info(f"Элемент {what} присутствует на странице.")
+        return element is not None
 
     def find_element(self, how, what):
         """Безопасный поиск элемента."""
-        return self._safe_find_element(how, what)
+        element = self._safe_find_element(how, what)
+        if element:
+            self.logger.info(f"Найден элемент {what}.")
+        return element
 
     def find_elements(self, how, what):
         """Находит все элементы по локатору."""
         try:
-            return self.browser.find_elements(how, what)
+            elements = self.browser.find_elements(how, what)
+            count = len(elements)
+            if count > 0:
+                self.logger.info(f"Найдено {count} элементов {what}.")
+            else:
+                self._log_error(f"Элементы {what} не найдены!")
+            return elements
         except NoSuchElementException:
-            self._log_error(f"Элементы {what} не найдены!")
+            self._log_error(f"Ошибка поиска элементов {what}!")
             return []
 
     def _safe_find_element(self, how, what):
@@ -42,7 +54,10 @@ class BasePage:
 
     def is_element_clickable(self, how, what, timeout=10):
         """Проверяет, кликабелен ли элемент."""
-        return self._wait_for_element(how, what, timeout, EC.element_to_be_clickable)
+        element = self._wait_for_element(how, what, timeout, EC.element_to_be_clickable)
+        if element:
+            self.logger.info(f"Элемент {what} кликабелен.")
+        return element
 
     def click(self, how, what, timeout=10):
         """Ожидает и кликает по элементу."""
@@ -50,18 +65,27 @@ class BasePage:
             element = self._wait_for_element(how, what, timeout, EC.element_to_be_clickable)
             if element:
                 element.click()
+                self.logger.info(f"Клик по элементу {what} выполнен успешно.")
         except (ElementClickInterceptedException, TimeoutException) as e:
             self._log_error(f"Не удалось кликнуть по элементу {what}: {str(e)}")
 
     def get_element_attribute(self, how, what, attribute):
         """Возвращает значение атрибута элемента."""
         element = self.find_element(how, what)
-        return element.get_attribute(attribute) if element else None
+        if element:
+            value = element.get_attribute(attribute)
+            self.logger.info(f"Атрибут {attribute} у элемента {what}: {value}")
+            return value
+        return None
 
     def get_text(self, how, what):
         """Получает текст элемента."""
         element = self.find_element(how, what)
-        return element.text if element else ""
+        if element:
+            text = element.text
+            self.logger.info(f"Текст элемента {what}: {text}")
+            return text
+        return ""
 
     def input_text(self, how, what, text, clear_first=True):
         """Вводит текст в поле."""
@@ -70,6 +94,7 @@ class BasePage:
             if clear_first:
                 element.clear()
             element.send_keys(text)
+            self.logger.info(f"Введен текст в элемент {what}: {text}")
 
     def wait_for_element(self, how, what, timeout=10):
         """Ожидает появления элемента."""
@@ -78,11 +103,13 @@ class BasePage:
     def _wait_for_element(self, how, what, timeout, condition):
         """Ожидает выполнение условия для элемента."""
         try:
-            return WebDriverWait(self.browser, timeout).until(condition((how, what)))
+            element = WebDriverWait(self.browser, timeout).until(condition((how, what)))
+            self.logger.info(f"Элемент {what} успешно найден с условием {condition.__name__}.")
+            return element
         except TimeoutException:
-            self._log_error(f"Элемент {what} не появился на странице")
+            self._log_error(f"Элемент {what} не появился на странице в течение {timeout} секунд")
             return None
 
     def _log_error(self, message):
         """Логирует ошибку."""
-        self.logger.error(message)
+        self.logger.error(f"{message}")

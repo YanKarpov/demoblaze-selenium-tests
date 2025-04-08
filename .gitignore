@@ -13,9 +13,21 @@ __pycache__/
 *.iml
 
 # Логи и временные файлы
+logs/
 *.log
 *.tmp
 .DS_Store
 
+# Архивные данные
+archive/
+
+#виртуальное окружение и переменные
 .env
 *venv
+
+# скриншоты тестов
+.png
+.jpg
+.jpeg
+.gif
+screenshots/

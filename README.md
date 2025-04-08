@@ -7,10 +7,6 @@
 │   locators.py         
 │   pytest.ini         
 │
-├───archive            - Архив старых файлов (Реализация тестов по условиям 2КТ)
-│       old_main.py
-│       инфа.txt
-│
 ├───components         - Модули UI-компонентов
 │       auth_modal.py
 │       custom_alert.py
