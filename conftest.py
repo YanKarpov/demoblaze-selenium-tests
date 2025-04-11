@@ -1,11 +1,12 @@
 import pytest
 import time
+import os
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from utils.logger import logger
+from utils.screenshot_maker import take_screenshot
 from jira import JIRA
 from dotenv import load_dotenv
-import os
 from datetime import datetime
 
 load_dotenv(override=True)
@@ -26,41 +27,50 @@ def init_jira():
 
     jira_conn = JIRA(server=server, basic_auth=(username, api_key))
     bug = next((i for i in jira_conn.issue_types() if i.name.lower() in ["bug", "баг", "ошибка"]), None)
-
     if not bug:
         logger.error("Тип задачи 'bug' не найден!")
-
     return jira_conn, bug
+
+def attach_screenshot(jira_issue, browser, test_name):
+    """Создание скриншота и прикрепление его к задаче."""
+    if not browser:
+        return
+    screenshot = take_screenshot(browser, name=test_name)
+    path = screenshot.filename
+    with open(path, "rb") as f:
+        jira.add_attachment(issue=jira_issue.key, attachment=f, filename=os.path.basename(path))
+    logger.info(f"Скриншот добавлен к задаче {jira_issue.key}: {path}")
+
+def create_issue_with_optional_screenshot(error_message, browser=None, test_name=""):
+    """Создание задачи с опциональным скриншотом."""
+    issue = create_jira_issue(error_message)
+    if issue:
+        logger.error(f"Задача в Jira создана: {issue.key} по причине: {error_message}")
+        if browser:
+            attach_screenshot(issue, browser, test_name)
+    return issue
 
 def create_jira_issue(error_message):
     """Создание задачи в Jira."""
     if jira and bug_type and jira_project_key:
-        jira_issue = jira.create_issue(
-            fields={
-                "project": {"key": jira_project_key},
-                "summary": "Ошибка при тестировании",
-                "description": f"Ошибка в тесте: {error_message}\n\nДата: {datetime.now()}",
-                "issuetype": {"id": bug_type.id}
-            }
-        )
-        return jira_issue
+        return jira.create_issue(fields={
+            "project": {"key": jira_project_key},
+            "summary": "Ошибка при тестировании",
+            "description": f"Ошибка в тесте: {error_message}\n\nДата: {datetime.now()}",
+            "issuetype": {"id": bug_type.id}
+        })
     logger.error("Не удалось создать задачу в Jira — Jira не инициализирована или не указан проект.")
     return None
 
 def pytest_addoption(parser):
-    """Добавление опций для запуска."""
-    parser.addoption(
-        "--language", action="store", default="ru", help="Выбери язык для браузера"
-    )
+    parser.addoption("--language", action="store", default="ru", help="Выбери язык для браузера")
     parser.addoption(
         "--jira", action="store", nargs="?", const=os.getenv("JIRA_DEFAULT_PROJECT", "SEL"), default=None,
         help="Включить Jira. Можно указать проект (например, --jira=ABC), или просто --jira (по умолчанию SEL)"
     )
 
 def pytest_configure(config):
-    """Инициализация Jira при необходимости."""
     global jira, bug_type, jira_project_key
-
     jira_project_key = config.getoption("--jira")
     if jira_project_key:
         logger.info(f"Jira включена. Проект: {jira_project_key}")
@@ -70,31 +80,28 @@ def pytest_configure(config):
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_runtest_makereport(item, call):
-    """Обработка отчётов по тестам (создание Jira задачи при ошибке или неожиданном прохождении теста)."""
     if call.when != "call":
         return
-
     report = pytest.TestReport.from_item_and_call(item, call)
+    browser = item.funcargs.get("browser")
 
-    if "xfail" in item.keywords and report.outcome == "passed":
-        error_message = f"Тест '{item.name}' неожиданно прошёл (XPASS)"
-        jira_issue = create_jira_issue(error_message)
-        if jira_issue:
-            logger.error(f"Задача в Jira создана: {jira_issue.key} по причине: {error_message}")
-        return
+    is_xfail = "xfail" in item.keywords
+    test_name = item.name
 
-    if report.failed and "xfail" not in item.keywords:
-        error_message = f"Тест '{item.name}' упал с ошибкой: {report.longrepr}"
-        jira_issue = create_jira_issue(error_message)
-        if jira_issue:
-            logger.error(f"Задача в Jira создана: {jira_issue.key} по причине ошибки: {error_message}")
-
-    if "xfail" in item.keywords and report.outcome == "failed":
-        logger.info(f"Тест '{item.name}' ожидаемо не прошёл (XFALL), задача в Jira не создаётся.")
+    if is_xfail and report.outcome == "passed":
+        # XPASS
+        msg = f"Тест '{test_name}' неожиданно прошёл (XPASS)"
+        create_issue_with_optional_screenshot(msg, browser, f"xpass_{test_name}")
+    elif report.failed and not is_xfail:
+        # FAILED
+        msg = f"Тест '{test_name}' упал с ошибкой: {report.longrepr}"
+        create_issue_with_optional_screenshot(msg, browser, f"fail_{test_name}")
+    elif is_xfail and report.outcome == "failed":
+        # XFALL
+        logger.info(f"Тест '{test_name}' ожидаемо не прошёл (XFALL), задача в Jira не создаётся.")
 
 @pytest.fixture(scope="module")
 def browser(request):
-    """Фикстура для инициализации браузера с логированием."""
     language = request.config.getoption("language") or os.getenv("BROWSER_LANGUAGE", "ru")
     options = Options()
     options.add_experimental_option('prefs', {'intl.accept_languages': language})
@@ -106,5 +113,5 @@ def browser(request):
     yield browser
 
     elapsed_time = time.time() - start_time
-    logger.info("="*30 + f" ЗАВЕРШЕНИЕ ТЕСТОВЫХ (Время: {elapsed_time:.2f} сек) " + "="*30)
+    logger.info("="*30 + f" ЗАВЕРШЕНИЕ ТЕСТОВ (Время: {elapsed_time:.2f} сек) " + "="*30)
     browser.quit()
