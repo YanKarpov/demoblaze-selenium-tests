@@ -1,0 +1,5 @@
+[server]
+port = 5555
+bind-host = true
+max-session = 16
+
