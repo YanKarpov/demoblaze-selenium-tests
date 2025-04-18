@@ -84,7 +84,7 @@ def browser(request):
     options.add_argument("--start-maximized")
 
     if executor == "remote":
-        selenium_grid_url = "http://10.11.23.23:5555/wd/hub"
+        selenium_grid_url = "http://{MY_IP}:5555/wd/hub"
         browser = webdriver.Remote(command_executor=selenium_grid_url, options=options)
     else:
         if browser_name == "chrome":
