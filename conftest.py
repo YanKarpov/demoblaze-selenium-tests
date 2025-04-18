@@ -4,68 +4,15 @@ import os
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from utils.logger import logger
-from utils.screenshot_maker import take_screenshot
-from jira import JIRA
 from dotenv import load_dotenv
-from datetime import datetime
+from utils.logger import logger
+from jira_logic.jira_client import init_jira
+from jira_logic.reporter import JiraReporter
 
 load_dotenv(override=True)
 
-jira = None
-bug_type = None
-jira_project_key = None
-
-
-def init_jira():
-    """Инициализация подключения к Jira."""
-    server = os.getenv("JIRA_SERVER")
-    username = os.getenv("JIRA_USERNAME")
-    api_key = os.getenv("JIRA_API_KEY")
-
-    if not all([server, username, api_key]):
-        logger.error("Ошибка: переменные окружения для Jira не заданы!")
-        return None, None
-
-    jira_conn = JIRA(server=server, basic_auth=(username, api_key))
-    bug = next((i for i in jira_conn.issue_types() if i.name.lower() in ["bug", "баг", "ошибка"]), None)
-    if not bug:
-        logger.error("Тип задачи 'bug' не найден!")
-    return jira_conn, bug
-
-
-def attach_screenshot(jira_issue, browser, test_name):
-    """Создание скриншота и прикрепление его к задаче."""
-    if not browser:
-        return
-    screenshot = take_screenshot(browser, name=test_name)
-    path = screenshot.filename
-    with open(path, "rb") as f:
-        jira.add_attachment(issue=jira_issue.key, attachment=f, filename=os.path.basename(path))
-    logger.info(f"Скриншот добавлен к задаче {jira_issue.key}: {path}")
-
-
-def create_issue_with_optional_screenshot(error_message, browser=None, test_name=""):
-    """Создание задачи с опциональным скриншотом."""
-    issue = create_jira_issue(error_message)
-    if issue:
-        logger.error(f"Задача в Jira создана: {issue.key} по причине: {error_message}")
-        if browser:
-            attach_screenshot(issue, browser, test_name)
-    return issue
-
-
-def create_jira_issue(error_message):
-    """Создание задачи в Jira."""
-    if jira and bug_type and jira_project_key:
-        return jira.create_issue(fields={
-            "project": {"key": jira_project_key},
-            "summary": "Ошибка при тестировании",
-            "description": f"Ошибка в тесте: {error_message}\n\nДата: {datetime.now()}",
-            "issuetype": {"id": bug_type.id}
-        })
-    logger.error("Не удалось создать задачу в Jira — Jira не инициализирована или не указан проект.")
-    return None
+jira_client = None
+jira_reporter = None
 
 
 def pytest_addoption(parser):
@@ -78,11 +25,17 @@ def pytest_addoption(parser):
 
 
 def pytest_configure(config):
-    global jira, bug_type, jira_project_key
+    global jira_client, jira_reporter
     jira_project_key = config.getoption("--jira")
+
     if jira_project_key:
         logger.info(f"Jira включена. Проект: {jira_project_key}")
-        jira, bug_type = init_jira()
+        jira_client, bug_type = init_jira()
+
+        if jira_client and bug_type:
+            jira_reporter = JiraReporter(jira_client, bug_type, jira_project_key)
+        else:
+            logger.warning("Jira не инициализирована корректно.")
     else:
         logger.info("Jira отключена.")
 
@@ -93,16 +46,20 @@ def pytest_runtest_makereport(item, call):
         return
     report = pytest.TestReport.from_item_and_call(item, call)
     browser = item.funcargs.get("browser")
-
     is_xfail = "xfail" in item.keywords
     test_name = item.name
 
+    if not jira_reporter:
+        return
+
     if is_xfail and report.outcome == "passed":
         msg = f"Тест '{test_name}' неожиданно прошёл (XPASS)"
-        create_issue_with_optional_screenshot(msg, browser, f"xpass_{test_name}")
+        issue = jira_reporter.create_issue(msg)
+        jira_reporter.attach_screenshot(issue, browser, f"xpass_{test_name}")
     elif report.failed and not is_xfail:
         msg = f"Тест '{test_name}' упал с ошибкой: {report.longrepr}"
-        create_issue_with_optional_screenshot(msg, browser, f"fail_{test_name}")
+        issue = jira_reporter.create_issue(msg)
+        jira_reporter.attach_screenshot(issue, browser, f"fail_{test_name}")
     elif is_xfail and report.outcome == "failed":
         logger.info(f"Тест '{test_name}' ожидаемо не прошёл (XFALL), задача в Jira не создаётся.")
 
@@ -127,7 +84,7 @@ def browser(request):
     options.add_argument("--start-maximized")
 
     if executor == "remote":
-        selenium_grid_url = "http://192.168.56.1:5555/wd/hub"
+        selenium_grid_url = "http://10.11.23.23:5555/wd/hub"
         browser = webdriver.Remote(command_executor=selenium_grid_url, options=options)
     else:
         if browser_name == "chrome":
