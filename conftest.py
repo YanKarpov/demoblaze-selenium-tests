@@ -17,6 +17,9 @@ jira_reporter = None
 
 def pytest_addoption(parser):
     parser.addoption("--language", action="store", default="ru", help="Выбери язык для браузера")
+    parser.addoption(
+        "--browser", action="store", default="chrome", help="Выберите браузер для тестов (chrome или firefox)"
+    )
     parser.addoption("--executor", action="store", default="local", help="Выбери режим запуска: local или remote")
     parser.addoption(
         "--jira", action="store", nargs="?", const=os.getenv("JIRA_DEFAULT_PROJECT", "SEL"), default=None,
@@ -64,8 +67,9 @@ def pytest_runtest_makereport(item, call):
         logger.info(f"Тест '{test_name}' ожидаемо не прошёл (XFALL), задача в Jira не создаётся.")
 
 
-@pytest.fixture(scope="function", params=["chrome", "firefox"])
+@pytest.fixture(scope="function")
 def browser(request):
+    browser_name = request.config.getoption("browser")
     language = request.config.getoption("language") or os.getenv("BROWSER_LANGUAGE", "ru")
     executor = request.config.getoption("executor")
     test_name = request.node.name
@@ -73,8 +77,7 @@ def browser(request):
     logger.info("="*30 + f" НАЧАЛО ТЕСТА: {test_name} (Язык: {language}, Executor: {executor}) " + "="*30)
     start_time = time.time()
 
-    browser_name = request.param
-
+    options = None
     if browser_name == "chrome":
         options = ChromeOptions()
     elif browser_name == "firefox":
@@ -84,13 +87,15 @@ def browser(request):
     options.add_argument("--start-maximized")
 
     if executor == "remote":
-        selenium_grid_url = "http://{MY_IP}:5555/wd/hub"
+        selenium_grid_url = "http://192.168.0.102:5555/wd/hub"  
         browser = webdriver.Remote(command_executor=selenium_grid_url, options=options)
     else:
         if browser_name == "chrome":
             browser = webdriver.Chrome(options=options)
-        else:
+        elif browser_name == "firefox":
             browser = webdriver.Firefox(options=options)
+        else:
+            raise ValueError(f"Unsupported browser: {browser_name}")
 
     yield browser
 
